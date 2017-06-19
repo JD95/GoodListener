@@ -39,7 +39,6 @@ namespace GoodListener
             Application.Current.EnteredBackground += new EnteredBackgroundEventHandler(OnPageBackground);
             loadBookmarkCollection();
             loadRecentTracks();
-
         }
 
         public void OnPageSuspension(object sender, SuspendingEventArgs e)
@@ -182,7 +181,6 @@ namespace GoodListener
             }
              
             await Windows.Storage.FileIO.WriteTextAsync(storage, json);
-
         }
 
         public void setPreviousPosition()
@@ -199,7 +197,6 @@ namespace GoodListener
                     previousPosition.hours = currentTime.Hours;
                 }
             }
-
         }
 
         public void track_Clicked(object sender, RoutedEventArgs args)
@@ -221,7 +218,6 @@ namespace GoodListener
                     recentlyPlayed.Add(track.track.Path);
                 }
 
-
                 // Lookup bookmark collection for selected track
                 currentCollection = bookmarkStorage.Find(bc => bc.trackPath == track.track.Path);
 
@@ -229,7 +225,7 @@ namespace GoodListener
                 if (currentCollection == null)
                 {
                     // Ask user to name collection
-                    string collectionName = "default";
+                    string collectionName = track.track.DisplayName;
 
                     currentCollection = new BookmarkCollection(collectionName, track.track.Path);
                     bookmarkStorage.Add(currentCollection);
