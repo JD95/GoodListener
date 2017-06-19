@@ -20,7 +20,7 @@
                 <PivotItem Header="Player">
                     <MediaPlayerElement x:Name="player" AreTransportControlsEnabled="True" AutoPlay="False"/>
                 </PivotItem>
-                <PivotItem Header="Track Bookmarks">
+                <PivotItem Header="Bookmarks">
                     <GridView x:Name="trackBookmarks">
                     
                     </GridView>

@@ -12,7 +12,7 @@
 
     <Grid x:Name="trackCard" Background="#FF9B9B9B">
         <Viewbox>
-            <TextBlock x:Name="trackName" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Height="80" Width="380" FontSize="36"/>
+            <TextBlock x:Name="trackName" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Height="80" Width="380" FontSize="18"/>
         </Viewbox>
     </Grid>
 </UserControl>
