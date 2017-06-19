@@ -26,9 +26,11 @@ namespace GoodListener
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        List<string> recentlyPlayed = new List<string>();
         List<BookmarkCollection> bookmarkStorage = new List<BookmarkCollection>();
         BookmarkCollection currentCollection = null;
         const string storageFile = "bookmarks.json";
+        const string recentTracks = "recentTracks.json";
         
         public MainPage()
         {
@@ -36,17 +38,74 @@ namespace GoodListener
             Application.Current.Suspending += new SuspendingEventHandler(OnPageSuspension);
             Application.Current.EnteredBackground += new EnteredBackgroundEventHandler(OnPageBackground);
             loadBookmarkCollection();
+            loadRecentTracks();
 
         }
 
         public void OnPageSuspension(object sender, SuspendingEventArgs e)
         {
             saveBookmarkCollection();
+            saveRecentTracks();
         }
 
         public void OnPageBackground(object sender, EnteredBackgroundEventArgs e)
         {
             saveBookmarkCollection();
+            saveRecentTracks();
+        }
+
+        public async void loadRecentTracks()
+        {
+            // load bookmark json from file
+            Windows.Storage.StorageFolder storageFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+
+            if (await storageFolder.TryGetItemAsync(recentTracks) != null)
+            {
+                Windows.Storage.StorageFile storage = await storageFolder.GetFileAsync(recentTracks);
+
+                string json = await Windows.Storage.FileIO.ReadTextAsync(storage);
+
+                recentlyPlayed = JsonConvert.DeserializeObject<List<string>>(json);
+
+                foreach (var track in recentlyPlayed)
+                {
+                    Windows.Storage.StorageFile file = await Windows.Storage.StorageFile.GetFileFromPathAsync(track);
+
+                    if (file != null)
+                    {
+                        // Application now has read/write access to the picked file
+                        var t = new Track(file);
+                        t.Tapped += track_Clicked;
+                        trackList.Items.Add(t);
+                    }
+                }
+
+            }
+            else
+            {
+                recentlyPlayed = new List<string>();
+            }
+        }
+
+        public async void saveRecentTracks()
+        {
+            // Serialize collection
+            string json = JsonConvert.SerializeObject(recentlyPlayed);
+
+            // save collection to file
+            Windows.Storage.StorageFolder storageFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+            Windows.Storage.StorageFile storage = null;
+
+            if (await storageFolder.TryGetItemAsync(recentTracks) == null)
+            {
+                storage = await storageFolder.CreateFileAsync(recentTracks);
+            }
+            else
+            {
+                storage = await storageFolder.GetFileAsync(recentTracks);
+            }
+
+            await Windows.Storage.FileIO.WriteTextAsync(storage, json);
         }
 
         private async void getMusic_Click(object sender, RoutedEventArgs e)
@@ -85,12 +144,21 @@ namespace GoodListener
         public async void loadBookmarkCollection()
         {
             // load bookmark json from file
-            Windows.Storage.StorageFolder storageFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
-            Windows.Storage.StorageFile storage = await storageFolder.GetFileAsync(storageFile);
-            string json = await Windows.Storage.FileIO.ReadTextAsync(storage);
+            Windows.Storage.StorageFolder storageFolder = Windows.Storage.ApplicationData.Current.LocalFolder;     
 
-            // deserialize it
-            bookmarkStorage = JsonConvert.DeserializeObject<List<BookmarkCollection>>(json);
+            if (await storageFolder.TryGetItemAsync(storageFile) != null)
+            {
+                Windows.Storage.StorageFile storage = await storageFolder.GetFileAsync(storageFile);
+
+                string json = await Windows.Storage.FileIO.ReadTextAsync(storage);
+
+                // deserialize it
+                bookmarkStorage = JsonConvert.DeserializeObject<List<BookmarkCollection>>(json);
+            }
+            else
+            {
+                bookmarkStorage = new List<BookmarkCollection>();
+            }     
         }
 
         public async void saveBookmarkCollection()
@@ -119,12 +187,19 @@ namespace GoodListener
 
         public void setPreviousPosition()
         {
-            var previousPosition = currentCollection.findBookmark(b => b.name == Bookmark.previousPosition);
+            if (currentCollection != null)
+            {
+                var previousPosition = currentCollection.findBookmark(b => b.name == Bookmark.previousPosition);
 
-            var currentTime = player.MediaPlayer.PlaybackSession.Position;
-            previousPosition.seconds = currentTime.Seconds;
-            previousPosition.minutes = currentTime.Minutes;
-            previousPosition.hours = currentTime.Hours;  
+                if (previousPosition != null)
+                {
+                    var currentTime = player.MediaPlayer.PlaybackSession.Position;
+                    previousPosition.seconds = currentTime.Seconds;
+                    previousPosition.minutes = currentTime.Minutes;
+                    previousPosition.hours = currentTime.Hours;
+                }
+            }
+
         }
 
         public void track_Clicked(object sender, RoutedEventArgs args)
@@ -132,11 +207,20 @@ namespace GoodListener
             var track = sender as Track;
             if (track != null)
             {
+                // Save previous position for current track
+                setPreviousPosition();
+
                 // Change screen to media player
                 mainPivot.SelectedIndex = 1;
 
                 // Set the player to use the specified file
                 player.Source = MediaSource.CreateFromStorageFile(track.track);
+
+                if(!recentlyPlayed.Exists(t => t == track.track.Path))
+                {
+                    recentlyPlayed.Add(track.track.Path);
+                }
+
 
                 // Lookup bookmark collection for selected track
                 currentCollection = bookmarkStorage.Find(bc => bc.trackPath == track.track.Path);
