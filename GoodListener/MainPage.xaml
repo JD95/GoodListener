@@ -6,25 +6,39 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
+    <Page.Resources>
+
+    </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        
-        
-            <Pivot x:Name="mainPivot" Title="Good Listener">
-                <PivotItem Header="Recent">
-                    <Grid>
-                        <GridView x:Name="trackList" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="340" Height="558"/>
-                        <Button x:Name="getMusic" Content="Get Music" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,573,0,0" Width="340" Height="57" Background="#FF199FC7" Click="getMusic_Click"/>
-                    </Grid>
-                </PivotItem>
-                <PivotItem Header="Player">
-                    <MediaPlayerElement x:Name="player" AreTransportControlsEnabled="True" AutoPlay="False"/>
-                </PivotItem>
-                <PivotItem Header="Bookmarks">
-                    <GridView x:Name="trackBookmarks">
-                    
-                    </GridView>
-                </PivotItem>
-            </Pivot>
+
+
+        <Pivot x:Name="mainPivot" Title="Good Listener">
+            <PivotItem Header="Recent">
+                <Grid>
+                    <GridView x:Name="trackList" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="340" Height="558"/>
+                    <Button x:Name="getMusic" Content="Get Music" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,573,0,0" Width="340" Height="57" Background="#FF199FC7" Click="getMusic_Click"/>
+                </Grid>
+            </PivotItem>
+            <PivotItem Header="Player">
+                <MediaPlayerElement x:Name="player" AreTransportControlsEnabled="True" AutoPlay="False"/>
+            </PivotItem>
+            <PivotItem Header="Bookmarks">
+                <Grid HorizontalAlignment="Left">
+                    <ListView x:Name="trackBookmarks" Width="314" Margin="11,10,11,69" />
+                    <Button Content="+" Margin="11,481,0,0" Height="64" Width="315" Click="AddBookmark_Click">
+                        <FlyoutBase.AttachedFlyout>
+                            <Flyout>
+                                <GridView Height="100" Width="339" HorizontalAlignment="Left">
+                                    <TextBox x:Name="NewBookmarkName" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" Text="TextBox" Width="329"/>
+                                    <Button x:Name="SaveBookmark" Content="Save" HorizontalAlignment="Right" VerticalAlignment="Top" Width="100" Height="43" Click="SaveBookmark_Click" />
+                                </GridView>
+                            </Flyout>
+                        </FlyoutBase.AttachedFlyout>
+                    </Button>
+
+                </Grid>
+            </PivotItem>
+        </Pivot>
     </Grid>
 </Page>

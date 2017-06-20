@@ -246,11 +246,32 @@ namespace GoodListener
                 var hours = previousPosition.hours;
 
                 player.MediaPlayer.PlaybackSession.Position = new TimeSpan(hours, minutes, seconds);
+
+                this.trackBookmarks.Items.Clear();
+
+                foreach (var bookmark in currentCollection.bookmarks)
+                {
+                    var time = new TimeSpan(bookmark.hours, bookmark.minutes, bookmark.seconds);
+                    this.trackBookmarks.Items.Add(new BookmarkCard(bookmark.name, time, this.player));
+                }
             }
             else
             {
                 track.toErrorState();
             }
+        }
+
+        private void AddBookmark_Click(object sender, RoutedEventArgs e)
+        {
+            FlyoutBase.ShowAttachedFlyout(sender as FrameworkElement);
+        }
+
+        private void SaveBookmark_Click(object sender, RoutedEventArgs e)
+        {
+            var name = this.NewBookmarkName.Text;
+            var time = this.player.MediaPlayer.PlaybackSession.Position;
+            currentCollection.addBookmark(new Bookmark(name, time.Seconds, time.Minutes, time.Hours));
+            this.trackBookmarks.Items.Add(new BookmarkCard(name, time, this.player));
         }
     }
 }
